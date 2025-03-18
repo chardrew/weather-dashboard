@@ -227,8 +227,8 @@ services:
     networks:
       - ${WEATHER_NETWORK_NAME}
 
-  # weather data simulator
-  get_weather_dev:
+  # weather data api
+  get_weather_dev: # runs only when 'docker-compose --profile dev' up is run
     container_name: get-weather-dev
     build:
       context: .
@@ -248,6 +248,31 @@ services:
     networks:
       - ${WEATHER_NETWORK_NAME}
     entrypoint: [ "python", "/app/scripts/get_weather_sim.py" ]
+    profiles:
+      - dev
+
+  get_weather_prod:  # runs only when 'docker-compose --profile prod' up is run
+    container_name: get-weather-prod
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.weather_api
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./config/properties.py:/app/config/properties.py
+      - ./scripts/get_weather.py:/app/scripts/get_weather.py
+    networks:
+      - ${WEATHER_NETWORK_NAME}
+    entrypoint: [ "python", "/app/scripts/get_weather.py" ]
+    profiles:
+      - prod
 
 
 networks:
