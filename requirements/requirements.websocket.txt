@@ -1,0 +1,7 @@
+asyncio
+asyncpg
+pydantic
+pyspark==3.5.5
+python-dotenv
+streamlit
+websockets==10.4

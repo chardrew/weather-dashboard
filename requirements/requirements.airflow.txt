@@ -1,0 +1,10 @@
+apache-airflow
+apache-airflow-providers-apache-spark
+apache-airflow-providers-apache-kafka
+kafka-python
+psycopg2-binary
+pydantic
+pyspark==3.5.5
+python-dotenv
+requests
+streamlit

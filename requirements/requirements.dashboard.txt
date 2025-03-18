@@ -1,0 +1,11 @@
+asyncio
+asyncpg
+folium
+plotly
+pydantic
+pyspark==3.5.5
+python-dotenv
+setuptools
+streamlit
+streamlit_folium
+websockets==10.4

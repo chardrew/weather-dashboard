@@ -1,0 +1,9 @@
+ARG PYTHON_VERSION  # passed from docker-compose.yml
+
+FROM python:${PYTHON_VERSION}-slim
+
+WORKDIR /app
+
+COPY requirements/requirements.weather_api.txt .
+
+RUN pip install -r requirements.weather_api.txt
