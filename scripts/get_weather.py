@@ -27,20 +27,11 @@ def get_current_weather(city: str):
 
     weather_data = response.json()
 
-    # Extract relevant fields
-    weather_info = {
-        'city': weather_data['name'],
-        'temperature': float(weather_data['main']['temp']),  # Convert to float
-        'humidity': float(weather_data['main']['humidity']),  # Convert to float
-        'weather': weather_data['weather'][0]['description'],
-        'timestamp': int(time.time())  # Integer timestamp
-    }
-
     # Send to Kafka topic
-    print(f"📡 Sending weather data to Kafka for {city}...\n{json.dumps(weather_info, indent=4)}")
+    print(f"📡 Sending weather data to Kafka for {city}...\n{json.dumps(weather_data, indent=4)}")
 
     try:
-        producer.send(kafka.topic, weather_info)
+        producer.send(kafka.topic, weather_data)
         producer.flush()  # Ensure messages are delivered
         print(f"✅ SUCCESS: Sent to topic {kafka.topic}")
     except Exception as e:
