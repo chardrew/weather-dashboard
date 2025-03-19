@@ -1,20 +1,7 @@
-import json, sys
+import json
 from airflow.models import Connection
 from airflow.utils.db import provide_session
 from airflow import settings
-
-sys.path.append("/opt/airflow/config")  # Ensure Python sees the config folder
-
-print("🛠 Checking if config module is found...")
-print("Current sys.path:", sys.path)
-
-try:
-    from config.properties import db_config as db, kafka_config as kafka, spark_config as spark
-    print("✅ Successfully imported config.properties!")
-except ModuleNotFoundError as e:
-    print("❌ ModuleNotFoundError:", e)
-
-
 from config.properties import db_config as db, kafka_config as kafka, spark_config as spark
 
 @provide_session
