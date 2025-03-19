@@ -51,13 +51,37 @@ def init_dashboard():
 
 
 def filter_last_24_hrs(dataframe):
-    dataframe = dataframe.dropDuplicates(["timestamp", "city_id"])  # if combination is the same, then drop duplicates
+    dataframe = dataframe.orderBy(col('timestamp').desc()).dropDuplicates(["timestamp", "city_id"])  # if combination is the same, then drop duplicates
     now_epoch = int(datetime.now(timezone.utc).timestamp())  # Ensure it's an integer
     ago_24hrs_epoch = now_epoch - int(timedelta(hours=24).total_seconds())  # Ensure it's an integer
+
     return dataframe.filter(dataframe.timestamp >= ago_24hrs_epoch)
 
+def unpack_weather_data(row):
+    return {
+        "lat": row["latitude"],
+        "lon": row["longitude"],
+        "temperature": row["temperature"],
+        "feels_like": row["feels_like"],
+        "humidity": row["humidity"],
+        "wind_speed": row["wind_speed"],
+        "wind_deg": row["wind_direction"],
+        "clouds": row["cloud_coverage"],
+        "visibility": row["visibility"],
+        "weather": row["weather_description"],
+        "weather_icon": row["weather_icon"],
+        "sunrise": row["sunrise"],
+        "sunset": row["sunset"],
+        "timestamp": row["timestamp"],
+        "timezone_offset": row["timezone"],
+        "city": row["city"]
+    }
 
 def update_dashboard():
+    # Initialise cache if required
+    if "prev_data" not in st.session_state:
+        st.session_state["prev_data"] = {}
+
     # Read from the database
     df_raw = read_table_from_db(db.table_raw)
     # df_agg = read_table_from_db(table_name_agg)
@@ -68,43 +92,31 @@ def update_dashboard():
     # Get most recent row and bring into memory
     most_recent_row = df_24.orderBy(desc("timestamp")).limit(1).collect()[0]
 
+    new_data = unpack_weather_data(most_recent_row)
+
+    # Check if data has changed
+    if st.session_state["prev_data"] == unpack_weather_data(most_recent_row):
+        return
+
     # Call update functions
-    update_weather_data(most_recent_row)
+    update_weather_data(new_data)
     update_chart(df_24)
-    update_map(most_recent_row)
+    update_map(new_data)
 
-def update_weather_data(most_recent_row):
-    new_data = {
-        "lat": most_recent_row["latitude"],
-        "lon": most_recent_row["longitude"],
-        "temperature": most_recent_row["temperature"],
-        "feels_like": most_recent_row["feels_like"],
-        "humidity": most_recent_row["humidity"],
-        "wind_speed": most_recent_row["wind_speed"],
-        "wind_deg": most_recent_row["wind_direction"],
-        "clouds": most_recent_row["cloud_coverage"],
-        "visibility": most_recent_row["visibility"],
-        "weather": most_recent_row["weather_description"],
-        "weather_icon": most_recent_row["weather_icon"],
-        "sunrise": most_recent_row["sunrise"],
-        "sunset": most_recent_row["sunset"],
-        "timestamp": most_recent_row["timestamp"],
-        "timezone_offset": most_recent_row["timezone"],
-        "city": most_recent_row["city"]
-    }
+    # Store for comparison next update_dashboard() call
+    st.session_state["prev_data"] = new_data
 
-    if "prev_data" not in st.session_state:
-        st.session_state["prev_data"] = {}
 
+def update_weather_data(data_row):
 
     with st.session_state["header_placeholder"]:
         # Convert timestamp to local time and format
-        last_updated_local = format_unix_time(new_data["timestamp"], new_data["timezone_offset"])
+        last_updated_local = format_unix_time(data_row["timestamp"], data_row["timezone_offset"])
         last_updated_local_str = last_updated_local.strftime("%A %-d %B, %I:%M %p")
 
         # Write title
         line1 = '🌤 Real-time Weather Dashboard'
-        line2 = f'📍 {new_data["city"]}'
+        line2 = f'📍 {data_row["city"]}'
         st.markdown(
             f"""
             <h1 style='font-size: 42px; font-weight: bold; text-align: center; margin-bottom: 0;'>
@@ -122,39 +134,39 @@ def update_weather_data(most_recent_row):
         col4, col5, col6 = st.columns(3)  # second row
 
         # 🌡️ Temperature
-        if st.session_state["prev_data"].get("temperature") != new_data["temperature"]:
-            col1.metric("🌡️ Temperature (°C)", f"{new_data['temperature']:.1f}°C",
-                        f"Feels like {new_data['feels_like']:.1f}°C")
+        if st.session_state["prev_data"].get("temperature") != data_row["temperature"]:
+            col1.metric("🌡️ Temperature (°C)", f"{data_row['temperature']:.1f}°C",
+                        f"Feels like {data_row['feels_like']:.1f}°C")
 
         # 💦 Humidity
-        if st.session_state["prev_data"].get("humidity") != new_data["humidity"]:
-            col2.metric("💦 Humidity", f"{new_data['humidity']}%")
+        if st.session_state["prev_data"].get("humidity") != data_row["humidity"]:
+            col2.metric("💦 Humidity", f"{data_row['humidity']}%")
 
         # 🌬️ Wind Speed
-        if st.session_state["prev_data"].get("wind_speed") != new_data["wind_speed"]:
-            wind_direction = convert_wind_direction(new_data["wind_deg"])
-            col3.metric("🌬️ Wind", f"{new_data['wind_speed']} m/s {wind_direction}")
+        if st.session_state["prev_data"].get("wind_speed") != data_row["wind_speed"]:
+            wind_direction = convert_wind_direction(data_row["wind_deg"])
+            col3.metric("🌬️ Wind", f"{data_row['wind_speed']} m/s {wind_direction}")
 
         # 🖼️ Weather Icon & Description (Move to Second Row)
-        if st.session_state["prev_data"].get("weather") != new_data["weather"]:
+        if st.session_state["prev_data"].get("weather") != data_row["weather"]:
             with col4:
-                icon_url = f"http://openweathermap.org/img/wn/{new_data['weather_icon']}@2x.png"
-                st.image(icon_url, caption=new_data["weather"])
+                icon_url = f"http://openweathermap.org/img/wn/{data_row['weather_icon']}@2x.png"
+                st.image(icon_url, caption=data_row["weather"])
 
         # ☁️ Cloud Cover
-        if st.session_state["prev_data"].get("clouds") != new_data["clouds"]:
-            col5.metric("☁️ Cloud Cover", f"{new_data['clouds']}%")
+        if st.session_state["prev_data"].get("clouds") != data_row["clouds"]:
+            col5.metric("☁️ Cloud Cover", f"{data_row['clouds']}%")
 
         # 👀 Visibility
-        if st.session_state["prev_data"].get("visibility") != new_data["visibility"]:
-            col6.metric("👀 Visibility", f"{new_data['visibility'] / 1000:.1f} km")
+        if st.session_state["prev_data"].get("visibility") != data_row["visibility"]:
+            col6.metric("👀 Visibility", f"{data_row['visibility'] / 1000:.1f} km")
 
         # ️🌙 Sunrise and Sunset
-        sunrise_time = format_unix_time(new_data["sunrise"], new_data["timezone_offset"])
-        sunset_time = format_unix_time(new_data["sunset"], new_data["timezone_offset"])
+        sunrise_time = format_unix_time(data_row["sunrise"], data_row["timezone_offset"])
+        sunset_time = format_unix_time(data_row["sunset"], data_row["timezone_offset"])
         daylight_duration = sunset_time - sunrise_time
 
-        if st.session_state["prev_data"].get("sunrise") != new_data["sunrise"]:
+        if st.session_state["prev_data"].get("sunrise") != data_row["sunrise"]:
             col1, col2 = st.columns(2)
 
             with col1:  # left side
@@ -164,10 +176,10 @@ def update_weather_data(most_recent_row):
                 st.write(f"⏳ Daylight Duration: {str(daylight_duration).split('.')[0].split(':')[0]} hours, {str(daylight_duration).split('.')[0].split(':')[1]} minutes")
 
 
-    st.session_state["prev_data"] = new_data  # Store for comparison
+
 
 def update_chart(df_spark):
-    if not df_spark.take(1):  # ✅ More efficient than `.count()`
+    if not df_spark.take(1):  # More efficient than '.count()'
         st.warning("No temperature data available for the last 24 hours.")
         return # Stop execution if no data is found
     else:
@@ -180,15 +192,19 @@ def update_chart(df_spark):
 
     st.session_state["prev_chart_data"] = df_pandas  # Update with new data
     df_pandas['local_time'] = pd.to_datetime(df_pandas['timestamp'] + df_pandas['timezone'], unit='s')
-    fig = px.line(df_pandas, x='local_time', y=['temperature', 'feels_like', 'temp_min', 'temp_max'], title='Temperature Trends',
+    fig = px.line(df_pandas, x='local_time', y=['temperature', 'feels_like', 'temp_min', 'temp_max'],
+                  title='Temperature Trends',
                   labels={'value': 'Temperature (°C)', 'local_time': 'Local Time'})
 
-    with st.session_state["chart_placeholder"]:
-        st.plotly_chart(fig, use_container_width=True)
+    if "chart_placeholder" not in st.session_state:
+        st.session_state["chart_placeholder"] = st.empty()
+    chart_placeholder = st.session_state["chart_placeholder"]
+    chart_placeholder.empty() # clear previous chart to avoid stacking elements
+    chart_placeholder.plotly_chart(fig, use_container_width=True)
 
 
-def update_map(most_recent_row):
-    lat, lon, city = most_recent_row["latitude"], most_recent_row["longitude"], most_recent_row["city"]
+def update_map(data_row):
+    lat, lon, city = data_row["latitude"], data_row["longitude"], data_row["city"]
 
     if "prev_location" in st.session_state:
         prev_lat, prev_lon = st.session_state["prev_location"]
