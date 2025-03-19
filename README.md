@@ -68,8 +68,8 @@ cd weather-dashboard
 3️⃣ Create a `.env` file and set up environment variables:
 
 ```sh
-cp .env.example .env
-rm .env.example
+cp ./.env.example .env
+rm ./.env.example
 ```
 - Open ```.env``` and enter your desired database password and your API key
 ```sh
@@ -85,16 +85,17 @@ API_KEY='<YOUR_API_KEY_HERE>'                             # your API key
 
 Use ```--profile dev``` to use the weather data simulator or ```--profile prod``` to hit the real OpenWeather API 
 ```sh
-docker-compose up --profile prod -d
+docker-compose --profile prod up -d
 ```
 
-5️⃣ Trigger DAG (only very first trigger must be manual)
+5️⃣ Trigger and unpause DAG (only very first trigger must be manual)
 
 - In the **Airflow UI** → [http://localhost:8080](http://localhost:8080) (**username:** airflow / **password:** airflow)
-
+  - Ensure you trigger AND unpause the DAG
 - OR through the command line: 
 ```
 docker exec -it airflow-webserver airflow dags trigger WeatherELT
+docker exec -it airflow-webserver airflow dags unpause WeatherELT
 ```
 
 6️⃣ Access the dashboard:
@@ -102,9 +103,9 @@ docker exec -it airflow-webserver airflow dags trigger WeatherELT
 
 7️ To stop 🛑
 
-Use the same profile used to start, ie. ```--profile dev``` if in development mode or ```--profile prod```if using the real OpenWeather API .
+Use the same profile used to start, i.e. ```--profile dev``` if in development mode or ```--profile prod```if using the real OpenWeather API .
 ```sh
-docker-compose down --profile prod
+docker-compose --profile prod down
 ```
 
 ## 🚀 Future Enhancements
