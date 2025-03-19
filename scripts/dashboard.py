@@ -57,10 +57,10 @@ def filter_last_24_hrs(dataframe):
 
     return dataframe.filter(dataframe.timestamp >= ago_24hrs_epoch)
 
-def unpack_weather_data(row):
+def extract_weather_data(row):
     return {
-        "lat": row["latitude"],
-        "lon": row["longitude"],
+        "latitude": row["latitude"],
+        "longitude": row["longitude"],
         "temperature": row["temperature"],
         "feels_like": row["feels_like"],
         "humidity": row["humidity"],
@@ -91,11 +91,10 @@ def update_dashboard():
 
     # Get most recent row and bring into memory
     most_recent_row = df_24.orderBy(desc("timestamp")).limit(1).collect()[0]
-
-    new_data = unpack_weather_data(most_recent_row)
+    new_data = extract_weather_data(most_recent_row)
 
     # Check if data has changed
-    if st.session_state["prev_data"] == unpack_weather_data(most_recent_row):
+    if st.session_state["prev_data"] == new_data:
         return
 
     # Call update functions
@@ -174,8 +173,6 @@ def update_weather_data(data_row):
 
             with col2:  # right side
                 st.write(f"⏳ Daylight Duration: {str(daylight_duration).split('.')[0].split(':')[0]} hours, {str(daylight_duration).split('.')[0].split(':')[1]} minutes")
-
-
 
 
 def update_chart(df_spark):
