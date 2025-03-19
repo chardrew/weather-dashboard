@@ -39,7 +39,7 @@ def get_current_weather(city: str):
 
 
 if __name__ == '__main__':
-    interval = 60  # Seconds
+    interval = 5*60  # Seconds
     city_name = "Melbourne,AU"
     assert city_name not in ["", None]
 
