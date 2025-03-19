@@ -6,7 +6,7 @@ import plotly.express as px
 import folium
 from streamlit_folium import folium_static
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, desc
 from datetime import datetime, timezone, timedelta
 from config.properties import db_config as db, websocket_config as websocket
 
@@ -51,6 +51,7 @@ def init_dashboard():
 
 
 def filter_last_24_hrs(dataframe):
+    dataframe = dataframe.dropDuplicates(["timestamp", "city_id"])  # if combination is the same, then drop duplicates
     now_epoch = int(datetime.now(timezone.utc).timestamp())  # Ensure it's an integer
     ago_24hrs_epoch = now_epoch - int(timedelta(hours=24).total_seconds())  # Ensure it's an integer
     return dataframe.filter(dataframe.timestamp >= ago_24hrs_epoch)
@@ -65,7 +66,7 @@ def update_dashboard():
     df_24 = filter_last_24_hrs(df_raw)
 
     # Get most recent row and bring into memory
-    most_recent_row = df_raw.orderBy(col("timestamp").desc()).limit(1).collect()[0]
+    most_recent_row = df_24.orderBy(desc("timestamp")).limit(1).collect()[0]
 
     # Call update functions
     update_weather_data(most_recent_row)
@@ -178,10 +179,9 @@ def update_chart(df_spark):
             return  # Skip update if data hasn't changed
 
     st.session_state["prev_chart_data"] = df_pandas  # Update with new data
-
-    df_pandas['timestamp'] = pd.to_datetime(df_pandas['timestamp'], unit='s')
-    fig = px.line(df_pandas, x='timestamp', y=['temperature', 'feels_like', 'temp_min', 'temp_max'], title='Temperature Trends',
-                  labels={'value': 'Temperature (°C)', 'timestamp': 'Time'})
+    df_pandas['local_time'] = pd.to_datetime(df_pandas['timestamp'] + df_pandas['timezone'], unit='s')
+    fig = px.line(df_pandas, x='local_time', y=['temperature', 'feels_like', 'temp_min', 'temp_max'], title='Temperature Trends',
+                  labels={'value': 'Temperature (°C)', 'local_time': 'Local Time'})
 
     with st.session_state["chart_placeholder"]:
         st.plotly_chart(fig, use_container_width=True)
