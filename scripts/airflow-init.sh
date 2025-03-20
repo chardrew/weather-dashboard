@@ -1,13 +1,8 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command exits with a non-zero statusqqqwq
-
+set -e  # Exit immediately if a command exits with a non-zero status
 
 echo "🚀 Running Airflow Initialization..."
-echo "🌎 Environment Variables:"
-env  # Print environment variables for debugging
-
-echo "📂 PYTHONPATH is set to: $PYTHONPATH"
 
 # Ensure database migrations are applied
 echo "🔄 Running Airflow DB Migrate..."
