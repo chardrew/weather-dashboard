@@ -11,6 +11,9 @@ airflow db migrate
 echo "✅ Checking Airflow DB..."
 airflow db check
 
+echo "⚙️ Creating Airflow User..."
+airflow users create --username airflow --password airflow --firstname Char --lastname Drew --role Admin --email admin@company.com
+
 # Run initialization scripts
 echo "⚙️ Setting Airflow Variables..."
 python /opt/airflow/scripts/set_airflow_vars.py

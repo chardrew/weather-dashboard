@@ -174,25 +174,6 @@ services:
     networks:
       - ${WEATHER_NETWORK_NAME}
 
-  airflow-create-user:
-    <<: *airflow-common
-    container_name: airflow-create-user
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-    entrypoint: [
-      '/bin/bash', '-c', 'airflow users create
-                          --username airflow
-                          --password airflow
-                          --firstname Char
-                          --lastname Drew
-                          --role Admin
-                          --email admin@company.com'
-    ]
-    restart: 'no'
-    networks:
-      - ${WEATHER_NETWORK_NAME}
-
   airflow-webserver:
     <<: *airflow-common
     container_name: airflow-webserver
@@ -210,7 +191,6 @@ services:
     container_name: airflow-scheduler
     depends_on:
       - airflow-init
-      - airflow-create-user
     entrypoint: airflow scheduler
     restart: always
     networks:
