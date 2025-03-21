@@ -127,9 +127,6 @@ def start_streaming():
     app_name = 'KafkaStreamProcessor'
     spark = SparkSession.builder \
         .appName(app_name) \
-        .config("spark.executor.instances", "4") \
-        .config("spark.executor.cores", "2") \
-        .config("spark.sql.shuffle.partitions", "8") \
         .getOrCreate()
 
     schema = get_schema()
@@ -139,7 +136,7 @@ def start_streaming():
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka.bootstrap_servers) \
         .option("subscribe", kafka.topic) \
-        .option("startingOffsets", "latest") \
+        .option("startingOffsets", "earliest") \
         .load() \
         .selectExpr("CAST(value AS STRING)")  # Convert bytes to string
 
