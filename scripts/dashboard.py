@@ -49,6 +49,18 @@ def init_dashboard():
     st.session_state["chart_placeholder"] = st.empty()
     st.session_state["map_placeholder"] = st.empty()
 
+    with st.session_state["header_placeholder"]:
+        # Write title
+        line1 = '🌤 Real-time Weather Dashboard'
+        st.markdown(
+            f"""
+            <h1 style='font-size: 42px; font-weight: bold; text-align: center; margin-bottom: 0;'>
+                {line1}
+            </h1>
+            """,
+            unsafe_allow_html=True
+        )
+
 
 def filter_last_24_hrs(dataframe):
     dataframe = dataframe.orderBy(col('timestamp').desc()).dropDuplicates(["timestamp", "city_id"])  # if combination is the same, then drop duplicates
@@ -83,7 +95,12 @@ def update_dashboard():
         st.session_state["prev_data"] = {}
 
     # Read from the database
-    df_raw = read_table_from_db(db.table_raw)
+    try:
+        df_raw = read_table_from_db(db.table_raw)
+    except Exception as e:
+        print(f'Error reading from database. Message: {e}')
+        return
+
     # df_agg = read_table_from_db(table_name_agg)
 
     # Filter to last 24 hours of data
@@ -230,4 +247,5 @@ async def listen_for_updates():
 
 if __name__ == "__main__":
     init_dashboard()
+    update_dashboard()
     asyncio.run(listen_for_updates())
