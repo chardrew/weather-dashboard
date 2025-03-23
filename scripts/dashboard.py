@@ -154,30 +154,30 @@ def update_weather_data(data_row):
             col1.metric("🌡️ Temperature (°C)", f"{data_row['temperature']:.1f}°C",
                         f"Feels like {data_row['feels_like']:.1f}°C")
 
-        # 💦 Humidity
+        # Humidity
         if st.session_state["prev_data"].get("humidity") != data_row["humidity"]:
             col2.metric("💦 Humidity", f"{data_row['humidity']}%")
 
-        # 🌬️ Wind Speed
+        # Wind Speed
         if st.session_state["prev_data"].get("wind_speed") != data_row["wind_speed"]:
             wind_direction = convert_wind_direction(data_row["wind_deg"])
             col3.metric("🌬️ Wind", f"{data_row['wind_speed']} m/s {wind_direction}")
 
-        # 🖼️ Weather Icon & Description (Move to Second Row)
+        # Weather Icon & Description (Move to Second Row)
         if st.session_state["prev_data"].get("weather") != data_row["weather"]:
             with col4:
                 icon_url = f"http://openweathermap.org/img/wn/{data_row['weather_icon']}@2x.png"
                 st.image(icon_url, caption=data_row["weather"])
 
-        # ☁️ Cloud Cover
+        # Cloud Cover
         if st.session_state["prev_data"].get("clouds") != data_row["clouds"]:
             col5.metric("☁️ Cloud Cover", f"{data_row['clouds']}%")
 
-        # 👀 Visibility
+        # Visibility
         if st.session_state["prev_data"].get("visibility") != data_row["visibility"]:
             col6.metric("👀 Visibility", f"{data_row['visibility'] / 1000:.1f} km")
 
-        # ️🌙 Sunrise and Sunset
+        # ️ Sunrise and Sunset
         sunrise_time = format_unix_time(data_row["sunrise"], data_row["timezone_offset"])
         sunset_time = format_unix_time(data_row["sunset"], data_row["timezone_offset"])
         daylight_duration = sunset_time - sunrise_time

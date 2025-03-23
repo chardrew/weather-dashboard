@@ -25,7 +25,7 @@ async def on_notify(conn, pid, channel, payload):
 
 async def listen_to_db():
     """Listens to PostgreSQL NOTIFY events."""
-    conn = await asyncpg.connect(db.url)  # ✅ Use db.url instead of manually formatting
+    conn = await asyncpg.connect(db.url)
     await conn.add_listener('weather_updates', on_notify)
     print("🔔 Listening for weather updates...")
 
