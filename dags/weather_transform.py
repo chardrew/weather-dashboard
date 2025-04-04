@@ -21,37 +21,19 @@ def create_spark_task(script_name: str, jars=None):
         dag=dag,
     )
 
-def log_dag_trigger(message):
-    """Kafka message processing function"""
-    print(f'🔔 Received Kafka message: DAG triggered!')
-    return True
-
 # Create DAG object
 dag = DAG(
-    dag_id='WeatherELT',
+    dag_id='WeatherTransform',
     default_args={'owner': 'Chardrew', 'start_date': airflow.utils.dates.days_ago(1)},
-    schedule_interval=None,
+    schedule_interval="*/60 * * * *",
     catchup=False,
 )
 
 # List dependencies
 dep1 = 'org.postgresql:postgresql:42.6.0'  # PostgreSQL JDBC driver
-dep2 = 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5'  # Spark-Kafka integration
-
-# Create Kafka sensor
-wait_for_kafka_message = AwaitMessageSensor(
-    task_id="wait_for_kafka_message",
-    topics=[kafka.topic],
-    kafka_config_id=kafka.connection_id,
-    apply_function='utils.kafka_functions.log_dag_trigger',
-    poll_timeout=60*60,  # 1 hour
-    poll_interval=5,
-    dag=dag,
-)
 
 # Create Spark tasks for Airflow
-kafka_to_db = create_spark_task('kafka_to_db.py', jars=[dep1, dep2])
 transform = create_spark_task('transform.py', jars=[dep1])
 
 # Define task sequence and dependencies
-wait_for_kafka_message >> kafka_to_db >> transform
+transform
