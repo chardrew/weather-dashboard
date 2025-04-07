@@ -129,12 +129,6 @@ def start_streaming():
         .appName(app_name) \
         .getOrCreate()
 
-    conf = spark.sparkContext.getConf()
-    print("Executor cores:", conf.get("spark.executor.cores"))
-    print("Driver cores:", conf.get("spark.driver.cores"))
-    print("Executor memory:", conf.get("spark.executor.memory"))
-    print("Driver memory:", conf.get("spark.driver.memory"))
-
     schema = get_schema()
 
     df = spark \
@@ -162,5 +156,5 @@ def start_streaming():
 
 
 if __name__ == '__main__':
-    db_utils.init()  # Create database and table if they don't exist
+    db_utils.init()  # Create database and tables if they don't exist
     start_streaming()  # Start streaming data from Kafka to database
