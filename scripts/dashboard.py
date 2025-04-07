@@ -12,9 +12,11 @@ import plotly.graph_objs as go
 
 
 def read_table_from_db(table_name):
+    app_name = 'Dashboard'
+    deps = 'org.postgresql:postgresql:42.6.0'
     spark = SparkSession.builder \
-        .appName('Dashboard') \
-        .config('spark.jars.packages', 'org.postgresql:postgresql:42.6.0') \
+        .appName(app_name) \
+        .config('spark.jars.packages', deps) \
         .getOrCreate()
 
     df = spark.read \
