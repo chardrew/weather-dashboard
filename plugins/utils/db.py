@@ -1,9 +1,11 @@
 import psycopg2
+from PIL.ExifTags import IFD
+
 from config.properties import db_config as db
 
 
 def init():
-    print(f'🔧 Initializing database: {db.name}, Table: {db.table_raw}, User: {db.user}')
+    print(f'Initializing database: {db.name}, Table: {db.table_raw}, User: {db.user}')
 
     # Connect to PostgreSQL and create the database if it doesn't exist
     conn = psycopg2.connect(user=db.user, password=db.password, host=db.host, port=db.port)
@@ -22,7 +24,7 @@ def init():
     # Connect to the newly created database
     conn = psycopg2.connect(database=db.name, user=db.user, password=db.password, host=db.host, port=db.port)
 
-    # Create raw data table if it doesn't already exist
+    # raw data table
     create_table_raw = f'''
     CREATE TABLE IF NOT EXISTS {db.table_raw} (
         id SERIAL PRIMARY KEY,
@@ -54,8 +56,23 @@ def init():
     );
     '''
 
+    # hourly aggregate table
+    create_table_hourly_agg = f'''
+    CREATE TABLE IF NOT EXISTS {db.table_agg} (
+        city_id INTEGER,
+        city TEXT,
+        timestamp_hour TIMESTAMP,
+        avg_temp FLOAT,
+        avg_humidity FLOAT,
+        avg_wind_speed FLOAT,
+        avg_cloud_coverage FLOAT,
+        PRIMARY KEY(city_id, timestamp_hour)
+    );
+    '''
+
     cur = conn.cursor()
     cur.execute(create_table_raw)
+    cur.execute(create_table_hourly_agg)
 
     # Create function for NOTIFY event
     cur.execute("""
@@ -68,7 +85,7 @@ def init():
         $$ LANGUAGE plpgsql;
     """)
 
-    # Create trigger for weather_data table if it doesn't exist
+    # Create trigger for raw table if it doesn't exist
     cur.execute("""
         DO $$ 
         BEGIN
@@ -83,11 +100,11 @@ def init():
         END $$;
     """)
 
-    print("✅ Database initialized with NOTIFY triggers.")
+    print("Database initialized with 'weather_update' NOTIFY trigger.")
     conn.commit()
     cur.close()
     conn.close()
-
+#todo fix hardcoded names in trigger and notify
 
 if __name__ == "__main__":
     init()

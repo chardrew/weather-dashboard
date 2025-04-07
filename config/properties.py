@@ -64,7 +64,14 @@ class SparkConfig(BaseModel):
     master_web_ui_port: str = os.getenv("SPARK_MASTER_WEB_UI_PORT")  # Keep as string
     worker_cores: str = os.getenv("SPARK_WORKER_CORES")
     worker_memory: str = os.getenv("SPARK_WORKER_MEMORY")
-
+    dynamic_allocation_enabled: bool = os.getenv("SPARK_DYNAMICALLOCATION_ENABLED")
+    executor_instances_min: str = os.getenv("SPARK_DYNAMICALLOCATION_MINEXECUTORS")
+    executor_instances_max: str = os.getenv("SPARK_DYNAMICALLOCATION_MAXEXECUTORS")
+    # executor_instances: str = os.getenv("SPARK_EXECUTOR_INSTANCES")
+    executor_cores: str = os.getenv("SPARK_EXECUTOR_CORES")
+    executor_memory: str = os.getenv("SPARK_EXECUTOR_MEMORY")
+    driver_cores: str = os.getenv("SPARK_DRIVER_CORES")
+    driver_memory: str = os.getenv("SPARK_DRIVER_MEMORY")
 
 ### **Websocket Server Configuration**
 class WebSocketConfig(BaseModel):

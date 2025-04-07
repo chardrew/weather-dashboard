@@ -17,7 +17,16 @@ def create_spark_task(script_name: str, jars=None):
         task_id=task_id,
         conn_id=spark.connection_id,
         application=f'jobs/python/{script_name}',
-        conf={"spark.jars.packages": jars},
+        conf={"spark.jars.packages": jars,
+              "spark.dynamicAllocation.enabled": spark.dynamic_allocation_enabled,
+              "spark.dynamicAllocation.minExecutors": spark.executor_instances_min,
+              "spark.dynamicAllocation.maxExecutors": spark.executor_instances_max,
+              "spark.executor.cores": spark.executor_cores,
+              "spark.executor.memory": spark.executor_memory,
+              "spark.driver.cores": spark.driver_cores,
+              "spark.driver.memory": spark.driver_memory,
+              # "spark.shuffle.service.enabled": "true",
+        },
         dag=dag,
     )
 
