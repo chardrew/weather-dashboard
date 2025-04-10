@@ -59,7 +59,7 @@ wait_for_kafka_message = AwaitMessageSensor(
 )
 
 # Create Spark tasks for Airflow
-kafka_to_db = create_spark_task('kafka_to_db.py', jars=[dep1, dep2])
+kafka_to_db = create_spark_task('ingest.py', jars=[dep1, dep2])
 
 # Define task sequence and dependencies
 wait_for_kafka_message >> kafka_to_db
