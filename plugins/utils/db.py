@@ -113,14 +113,28 @@ def init():
     '''
 
     # NOTIFY on new insert into raw table
-    raw_update_func = f'''
-        CREATE OR REPLACE FUNCTION notify_raw_update()
-        RETURNS TRIGGER AS $$
-        BEGIN
+    raw_update_func = '''
+    CREATE OR REPLACE FUNCTION notify_raw_update()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        last_row weather_raw;
+    BEGIN
+        -- Get the most recent row (excluding the new one being inserted)
+        SELECT * INTO last_row
+        FROM weather_raw
+        WHERE city_id = NEW.city_id
+        ORDER BY timestamp DESC
+        LIMIT 1;
+
+        -- Compare selected fields
+        IF last_row IS NULL OR
+           last_row.timestamp IS DISTINCT FROM NEW.timestamp THEN
             PERFORM pg_notify('raw_updates', 'new_data');
-            RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql;
+        END IF;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
     '''
 
     raw_update_trig = f'''
