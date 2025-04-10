@@ -26,11 +26,11 @@ def read_table_from_db(table_name):
 
 
 def run():
-    # read from database (weather_raw)
+    # read from database (raw)
     df_raw = read_table_from_db(db.table_raw)
 
     if df_raw.rdd.isEmpty():
-        print("No data found in weather_raw.")
+        print(f"No data found in {db.table_raw}.")
         return
 
     df_staging_old = spark.read \
