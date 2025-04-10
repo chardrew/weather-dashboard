@@ -21,38 +21,53 @@ This project is a **real-time weather data pipeline** that ingests, processes, s
 
 ### 🗄️ Data Storage (PostgreSQL)
 
-The processed data is stored in two tables:
+The processed data is stored in the following tables:
 
-- **weather\_raw**: Stores raw ingested data from Kafka.
-- **weather\_agg**: Stores **transformed and aggregated data** for visualisation.
+- **raw**: Stores raw ingested data from Kafka. Often contains duplicate records.
+- **staging**: Stores deduplicated and clean data for dashboard and aggregations.
+- **cities**: Stores static city information instead of duplicating it for each record.
+- **hourly**: Stores transformed and aggregated data for visualisation.
 
 ### 📊 Real-Time Dashboard (Streamlit)
 
 - A **Streamlit dashboard** reads from PostgreSQL and visualises:
   - **Current Weather Metrics** (Temperature, Humidity, Wind Speed, etc.).
-  - **Temperature Trends (Last 24 Hours)**.
+  - **Aggregate data over the last 24 hours**
   - **Weather Map Integration** using **Folium**.
   - **Real-time updates** using **WebSockets**.
 
 ### 📢 Event-Driven Updates (WebSocket & Airflow)
 
-- **WebSocket Server** notifies the dashboard **whenever new data is available**.
+- **WebSocket Server** notifies the dashboard **whenever new staging data is available**.
+- **Automated DAG triggers** by Websocket Server upon notification of new raw data to deduplicate 
 - **Airflow DAGs** automate **data extraction, transformation, and loading (ETL)** processes.
 - Spark nodes **execute processing** rather than Airflow handling transformations.
 
 ## 🛠️ Tech Stack  
 
+- All components are **containerised** and dependencies accounted for in **Docker Compose**
+
 | 📌 **Component**       | 🚀 **Technology Used**                              |
 |------------------------|-----------------------------------------------------|
 | **Data Ingestion**     | **Kafka Producer** (API / Synthetic) <img src="https://www.vectorlogo.zone/logos/apache_kafka/apache_kafka-icon.svg" width="20" align="right"> |
-| **Stream Processing**  | **PySpark Structured Streaming** <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Apache_Spark_logo.svg" width="30" align="right"> |
-| **Database**          | **PostgreSQL (Containerised)** <img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="20" align="right"> |
+| **Processing & Transformation**  | **PySpark Structured Streaming** <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Apache_Spark_logo.svg" width="30" align="right"> |
+| **Database**          | **PostgreSQL** <img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="20" align="right"> |
 | **Orchestration**     | **Apache Airflow** <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png" width="50" align="right"> |
 | **Visualisation**     | **Streamlit (Web Dashboard)** <img src="https://streamlit.io/images/brand/streamlit-mark-color.png" width="25" align="right"> |
 | **Messaging**         | **WebSockets** <img src="https://www.svgrepo.com/show/323018/plug.svg" width="25" align="right"> |
 | **Containerisation**  | **Docker & Docker Compose** <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" width="25" align="right"> |
 
- 
+ ## 📊 Entity Relationship Diagram (ERD)
+![ERD](./assets/database_erd.svg)
+
+<details>
+  <summary>🔄 Data Lineage Diagram</summary>
+
+  ![Data Lineage](./assets/data_lineage.svg)
+</details>
+
+
+
 ## 📜 How to Run
 
 1️⃣ Clone the repository:
@@ -88,14 +103,17 @@ Use ```--profile dev``` to use the weather data simulator or ```--profile prod``
 docker-compose --profile prod up -d
 ```
 
-5️⃣ Trigger and unpause DAG (only very first trigger must be manual)
+5️⃣ Trigger the Ingestion DAG and unpause other DAGs (only very first trigger must be manual)
 
 - In the **Airflow UI** → [http://localhost:8080](http://localhost:8080) (**username:** airflow / **password:** airflow)
-  - Ensure you trigger AND unpause the DAG
+  - Ensure you trigger AND unpause the Staging and Transformation DAGs
 - OR through the command line: 
 ```
-docker exec -it airflow-webserver airflow dags trigger WeatherELT
-docker exec -it airflow-webserver airflow dags unpause WeatherELT
+docker exec -it airflow-webserver airflow dags trigger WeatherIngest
+docker exec -it airflow-webserver airflow dags unpause WeatherIngest
+docker exec -it airflow-webserver airflow dags unpause WeatherStagingUpdate
+docker exec -it airflow-webserver airflow dags unpause WeatherTransform
+
 ```
 
 6️⃣ Access the dashboard:
@@ -119,17 +137,18 @@ docker-compose --profile prod down
 - 📌 **Deploy on Kubernetes** for better **scalability** and **fault tolerance**.
 - 📌 **Use Spark Structured Streaming with Kafka Direct Stream Mode** for improved ingestion efficiency.
 - 📌 **Index Key Columns in PostgreSQL** to enhance query performance.
-- 📌 **Add a staging table** and schedule a job to **remove duplicates** in PostgreSQL.
+- 📌 **Use a Schema Registry** to standardise and enforce schemas more strictly.
 
 
 ### 🔍 Reliability & Monitoring
-- 📌 **Health Checks for All Services** (Kafka, Spark, Airflow, WebSockets).
+- 📌 **Health Checks for All Services** (Spark, Airflow, WebSocket Server).
 - 📌 **Centralized Logging with ELK Stack** (Elasticsearch, Logstash, Kibana) for better debugging and analytics.
 
 ### 📊 Data & Intelligence
-- 📌 **Multi-Location Weather Support** (Currently only Melbourne).
+- 📌 **Multi-Location Weather Support** (Currently only one).
 - 📌 **Advanced Historical Data Transformations & Reports**.
 - 📌 **Integrating Predictive Analytics** (ML models for weather forecasting).
 
 
 ## 🌟 **Enjoy your Real-Time Weather Dashboard!** 🌍
+
