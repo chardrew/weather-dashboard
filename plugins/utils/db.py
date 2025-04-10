@@ -25,7 +25,7 @@ def init():
     # Connect to the newly created database
     conn = psycopg2.connect(database=db.name, user=db.user, password=db.password, host=db.host, port=db.port)
 
-    # raw data table  # todo add foreign key for cities table in raw table ->  cities(id)
+    # raw data table
     create_table_raw = f'''
     CREATE TABLE IF NOT EXISTS {db.table_raw} (
         id SERIAL PRIMARY KEY,
