@@ -14,6 +14,8 @@ class DatabaseConfig(BaseModel):
     name: str = os.getenv("DATABASE_NAME")
     table_raw: str = os.getenv("TABLE_NAME_RAW")
     table_agg: str = os.getenv("TABLE_NAME_AGG")
+    table_staging: str = os.getenv("TABLE_NAME_STAGING")
+    table_cities: str = os.getenv("TABLE_NAME_CITIES")
     user: str = os.getenv("DATABASE_USER")
     password: str = os.getenv("DATABASE_PASSWORD")
     host: str = os.getenv("DATABASE_HOST")
@@ -33,6 +35,8 @@ class DatabaseConfig(BaseModel):
 class OpenWeatherConfig(BaseModel):
     api_url: str = os.getenv("API_URL")
     api_key: str = os.getenv("API_KEY")
+    city: str = os.getenv("CITY")
+    country: str = os.getenv("COUNTRY")
 
 
 ### **Kafka Configuration**

@@ -1,9 +1,11 @@
+import functools
 import time
 import requests
 import json
 from kafka import KafkaProducer
 from config.properties import kafka_config as kafka, weather_api_config as weather_api
 
+print = functools.partial(print, flush=True)
 
 # Set up Kafka producer
 producer = KafkaProducer(
@@ -40,7 +42,7 @@ def get_current_weather(city: str):
 
 if __name__ == '__main__':
     interval = 5*60  # Seconds
-    city_name = "Melbourne,AU"
+    city_name = ','.join([weather_api.city, weather_api.country])  # eg. Melbourne,AU
     assert city_name not in ["", None]
 
     while True:

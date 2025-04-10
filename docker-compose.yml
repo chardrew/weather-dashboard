@@ -12,6 +12,7 @@ x-airflow-common: &airflow-common
   env_file:
     - .env
   environment:
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
     AIRFLOW__CORE__LOAD_EXAMPLES: False
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${AIRFLOW_DATABASE_HOST}:${AIRFLOW_DATABASE_PORT}/${AIRFLOW_DATABASE_NAME}
