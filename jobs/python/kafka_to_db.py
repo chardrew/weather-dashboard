@@ -2,14 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.connect.dataframe import DataFrame
 from pyspark.sql.functions import from_json, col, explode
 from pyspark.sql.types import *
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 from config.properties import db_config as db, kafka_config as kafka
 from plugins.utils import db as db_utils
-
-# Initialize SQLAlchemy engine & session
-engine = create_engine(db.url)
-Session = sessionmaker(bind=engine)
 
 def write_to_db(batch_df, batch_id):
     print(f"🔍 Processing Batch ID: {batch_id}")
@@ -29,12 +23,6 @@ def write_to_db(batch_df, batch_id):
         .option('driver', db.driver) \
         .mode('append') \
         .save()
-
-    print('📢 Sending NOTIFY to WebSocket server...')
-    session = Session()
-    session.execute(text("NOTIFY weather_updates, 'new_data';"))
-    session.commit()
-    session.close()
 
 
 def get_schema():
