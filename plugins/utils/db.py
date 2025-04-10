@@ -113,15 +113,15 @@ def init():
     '''
 
     # NOTIFY on new insert into raw table
-    raw_update_func = '''
+    raw_update_func = f'''
     CREATE OR REPLACE FUNCTION notify_raw_update()
     RETURNS TRIGGER AS $$
     DECLARE
-        last_row weather_raw;
+        last_row {db.table_raw};
     BEGIN
         -- Get the most recent row (excluding the new one being inserted)
         SELECT * INTO last_row
-        FROM weather_raw
+        FROM {db.table_raw}
         WHERE city_id = NEW.city_id
         ORDER BY timestamp DESC
         LIMIT 1;
