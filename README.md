@@ -1,8 +1,10 @@
 # 🌤 Real-Time Weather Data Pipeline
-
+Just want to get started?  👉 [How to Run ](#📜-how-to-run)
 ## 📌 Project Overview
 
 This project is a **real-time weather data pipeline** that ingests, processes, stores, and visualises weather data on a dashboard in a **fully containerised environment** using **Kafka, Spark, PostgreSQL, Airflow, and Streamlit**.
+
+![Screenshot](./assets/dashboard.png)
 
 ## 🔹 Architecture Overview
 
@@ -43,7 +45,7 @@ The processed data is stored in the following tables:
 - **Airflow DAGs** automate **data extraction, transformation, and loading (ETL)** processes.
 - Spark nodes **execute processing** rather than Airflow handling transformations.
 
-## 🛠️ Tech Stack  
+## 🛠️ Architectural Overview  
 
 - All components are **containerised** and dependencies accounted for in **Docker Compose**
 
@@ -57,8 +59,17 @@ The processed data is stored in the following tables:
 | **Messaging**         | **WebSockets** <img src="https://www.svgrepo.com/show/323018/plug.svg" width="25" align="right"> |
 | **Containerisation**  | **Docker & Docker Compose** <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" width="25" align="right"> |
 
- ## 📊 Entity Relationship Diagram (ERD)
-![ERD](./assets/database_erd.svg)
+<details open>
+  <summary>🌐 Architectural Overview Diagram</summary>
+  
+  ![Architecture Overview](./assets/architecture_overview.svg)
+</details>
+
+<details>
+  <summary>📊 Entity Relationship Diagram (ERD)</summary>
+  
+  ![ERD](./assets/database_erd.svg)
+</details>
 
 <details>
   <summary>🔄 Data Lineage Diagram</summary>
