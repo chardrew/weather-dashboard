@@ -117,13 +117,10 @@ docker-compose --profile prod up -d
 5️⃣ Trigger the Ingestion DAG and unpause other DAGs (only very first trigger must be manual)
 
 - In the **Airflow UI** → [http://localhost:8080](http://localhost:8080) (**username:** airflow / **password:** airflow)
-  - Ensure you trigger AND unpause the Staging and Transformation DAGs
+  - Ensure you trigger AND unpause all 3 DAGs
 - OR through the command line: 
 ```
-docker exec -it airflow-webserver airflow dags trigger WeatherIngest
-docker exec -it airflow-webserver airflow dags unpause WeatherIngest
-docker exec -it airflow-webserver airflow dags unpause WeatherStagingUpdate
-docker exec -it airflow-webserver airflow dags unpause WeatherTransform
+docker exec -it airflow-webserver bash -c 'for d in WeatherIngest WeatherStagingUpdate WeatherTransform; do airflow dags unpause $d; done; airflow dags trigger WeatherIngest'
 
 ```
 
