@@ -137,26 +137,24 @@ docker-compose --profile prod down
 ## 🚀 Future Enhancements
 
 ### 🎨 UI/UX Improvements
-- 📌 **Enhanced Weather Visualizations** (e.g., wind speed radar, precipitation heatmaps).
-- 📌 **WebSocket Connection Status Indicator** to show real-time data updates.
-- 📌 **Mobile-Friendly Dashboard** with a responsive Streamlit UI.
+-  **Enhanced Weather Visualizations** (e.g., wind speed radar, precipitation heatmaps).
+- **WebSocket Connection Status Indicator** to show real-time data updates.
+- **Mobile-Friendly Dashboard** with a responsive Streamlit UI.
 
 ### 🛠 Performance & Scalability
-- 📌 **Deploy on Kubernetes** for better **scalability** and **fault tolerance**.
-- 📌 **Use Spark Structured Streaming with Kafka Direct Stream Mode** for improved ingestion efficiency.
-- 📌 **Index Key Columns in PostgreSQL** to enhance query performance.
-- 📌 **Use a Schema Registry** to standardise and enforce schemas more strictly.
+- **Deploy on Kubernetes** for better **scalability** and **fault tolerance**.
+- **Index Key Columns in PostgreSQL** to enhance query performance.
+- **Use a Schema Registry** to standardise and enforce schemas more strictly.
 
 
 ### 🔍 Reliability & Monitoring
-- 📌 **Health Checks for All Services** (Spark, Airflow, WebSocket Server).
-- 📌 **Centralized Logging with ELK Stack** (Elasticsearch, Logstash, Kibana) for better debugging and analytics.
+- **Health Checks for All Services** (Spark, Airflow, WebSocket Server).
+- **Centralized Logging with ELK Stack** (Elasticsearch, Logstash, Kibana) for better debugging and analytics.
 
 ### 📊 Data & Intelligence
-- 📌 **Multi-Location Weather Support** (Currently only one).
-- 📌 **Advanced Historical Data Transformations & Reports**.
-- 📌 **Integrating Predictive Analytics** (ML models for weather forecasting).
+- **Multi-Location Weather Support** (Currently only one).
+- **Integrating Predictive Analytics** (ML models for weather forecasting).
 
 
-## 🌟 **Enjoy your Real-Time Weather Dashboard!** 🌍
+## 🌍 **Enjoy your Real-Time Weather Dashboard!**
 
