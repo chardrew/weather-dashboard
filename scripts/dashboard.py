@@ -105,26 +105,23 @@ def update_dashboard():
     df_agg = read_table_from_db(db.table_agg)
     df_cities = read_table_from_db(db.table_cities)
 
-    if df_stg is None or df_agg is None or df_cities is None:
-        return  # table missing - ingestion/staging/aggregation jobs need to finish first
+    # Check if tables are empty
+    if df_stg is None or df_cities is None:
+        return  # table missing - ingestion/staging jobs need to finish first
 
     # Filter to last 24 hours of data
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
     df_stg_24 = df_stg.filter(df_stg.timestamp_utc >= cutoff)
-    df_agg_24 = df_agg.filter(df_agg.timestamp_hour >= cutoff)
-
+   
     # Filter by city
     city = df_cities \
                     .filter((col("name") == weather_api.city) & (col("country") == weather_api.country)) \
                     .limit(1) \
                     .collect()[0]
-
     df_stg_24 = df_stg_24.filter(col('city_id') == city['id'])
-    df_agg_24 = df_agg_24.filter(col('city_id') == city['id'])
 
     # Sort by date for plotting
     df_stg_24 = df_stg_24.sort(desc('timestamp'))
-    df_agg_24 = df_agg_24.sort(desc('timestamp_hour'))
 
     # Bring relevant data into memory
     latest_df = df_stg_24.limit(1)
@@ -137,11 +134,19 @@ def update_dashboard():
     latest_row = extract_weather_data(latest_row)
 
     df_stg_24 = df_stg_24.toPandas()
-    df_agg_24 = df_agg_24.toPandas()
+
+    # Repeat hourly aggregation if available
+    if df_agg:
+        df_agg_24 = df_agg.filter(df_agg.timestamp_hour >= cutoff)  # filter to last 24 hours
+        df_agg_24 = df_agg_24.filter(col('city_id') == city['id'])  # filter by city
+        df_agg_24 = df_agg_24.sort(desc('timestamp_hour'))  # sort by date for plotting
+        df_agg_24 = df_agg_24.toPandas()  # bring into memory
+    else:
+        df_agg_24 = pd.DataFrame()  # fallback to empty DataFrame
 
     # Check if data has changed
     is_new_stg = not df_stg_24.equals(st.session_state["prev_data_stg"])
-    is_new_agg = not df_agg_24.equals(st.session_state["prev_data_agg"])
+    is_new_agg = not df_agg_24.equals(st.session_state["prev_data_agg"]) and not df_agg_24.empty
     if not is_new_stg and not is_new_agg:
         return
 
@@ -222,10 +227,13 @@ def update_weather_data(new_row):
 def update_charts(df_stg, df_hourly):
     # add local_time column so plot is in local time
     df_stg['local_time'] = pd.to_datetime(df_stg['timestamp'] + df_stg['timezone'], unit='s')
-    df_hourly['local_time'] = df_hourly['timestamp_hour'] + \
-                              pd.to_timedelta(30, unit='minutes') + \
-                              pd.to_timedelta(df_stg['timezone'], unit='s')
 
+    if df_hourly is None or df_hourly.empty:
+        print("[INFO] Skipping hourly overlays - hourly table not available.")
+        df_hourly = pd.DataFrame(columns=['timestamp_hour', 'avg_temp', 'avg_humidity', 'avg_wind_speed', 'avg_cloud_coverage', 'local_time'])  # Ensure compatibility below
+    else:
+        df_hourly['local_time'] = df_hourly['timestamp_hour'] + pd.to_timedelta(30, unit='minutes') + pd.to_timedelta(df_stg['timezone'], unit='s')
+    
     # Shared layout styling
     full_height = 500
     half_height = round(0.5*full_height)
