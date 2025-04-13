@@ -83,7 +83,8 @@ def init():
         sunset BIGINT,
         timezone INTEGER,
         city_id INTEGER,
-        FOREIGN KEY (city_id) REFERENCES {db.table_cities}(id)
+        FOREIGN KEY (city_id) REFERENCES {db.table_cities}(id),
+        FOREIGN KEY (id) REFERENCES {db.table_raw}(id)
     );
     '''
 
