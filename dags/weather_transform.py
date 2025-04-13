@@ -1,7 +1,6 @@
+from datetime import datetime
 from pathlib import Path
-import airflow
 from airflow import DAG
-from airflow.providers.apache.kafka.sensors.kafka import AwaitMessageSensor
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from config.properties import kafka_config as kafka, spark_config as spark
 
@@ -25,7 +24,6 @@ def create_spark_task(script_name: str, jars=None):
               "spark.executor.memory": spark.executor_memory,
               "spark.driver.cores": spark.driver_cores,
               "spark.driver.memory": spark.driver_memory,
-              # "spark.shuffle.service.enabled": "true",
         },
         dag=dag,
     )
@@ -33,9 +31,10 @@ def create_spark_task(script_name: str, jars=None):
 # Create DAG object
 dag = DAG(
     dag_id='WeatherTransform',
-    default_args={'owner': 'Chardrew', 'start_date': airflow.utils.dates.days_ago(1)},
-    schedule_interval="*/60 * * * *",
+    default_args={'owner': 'Chardrew', 'start_date': datetime(2025, 4, 13),},
+    schedule_interval="0 * * * *",
     catchup=False,
+    max_active_runs=1,
 )
 
 # List dependencies

@@ -1,5 +1,5 @@
+from datetime import datetime
 from pathlib import Path
-import airflow
 from airflow import DAG
 from airflow.providers.apache.kafka.sensors.kafka import AwaitMessageSensor
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
@@ -25,7 +25,6 @@ def create_spark_task(script_name: str, jars=None):
               "spark.executor.memory": spark.executor_memory,
               "spark.driver.cores": spark.driver_cores,
               "spark.driver.memory": spark.driver_memory,
-              # "spark.shuffle.service.enabled": "true",
         },
         dag=dag,
     )
@@ -38,9 +37,10 @@ def log_dag_trigger(message):
 # Create DAG object
 dag = DAG(
     dag_id='WeatherIngest',
-    default_args={'owner': 'Chardrew', 'start_date': airflow.utils.dates.days_ago(1)},
+    default_args={'owner': 'Chardrew', 'start_date': datetime(2025, 4, 13),},
     schedule_interval=None,
     catchup=False,
+    max_active_runs=1,
 )
 
 # List dependencies
