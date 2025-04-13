@@ -1,5 +1,5 @@
 # 🌤 Real-Time Weather Data Pipeline
-Just want to get started?  👉 [How to Run ](#📜-how-to-run)
+Just want to get started?  👉 [How to Run ](#-how-to-run)
 ## 📌 Project Overview
 
 This project is a **real-time weather data pipeline** that ingests, processes, stores, and visualises weather data on a dashboard in a **fully containerised environment** using **Kafka, Spark, PostgreSQL, Airflow, and Streamlit**.
